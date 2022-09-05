@@ -27,8 +27,10 @@ class TestViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
     var lastKnownDeviceOrientation : UIDeviceOrientation?
     var videoDataOutputQueue : DispatchQueue?
     var state : Int = 0
-    var Open_threshold : CGFloat = 0.85
-    var Close_threshold : CGFloat = 0.20
+   // var Open_threshold : CGFloat = 0.85
+   // var Close_threshold : CGFloat = 0.20
+    var Open_threshold : CGFloat = 0.8
+    var Close_threshold : CGFloat = 0.35
     var isEyeBlinked : Bool = false
     var mainBuffer : CMSampleBuffer?
     var overlayCircle : UIView = UIView()
@@ -271,9 +273,7 @@ class TestViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
     private func handleFaceDetectionResults(_ observedFaces: [VNFaceObservation],sampleBuffer : CMSampleBuffer) {
         
         let _: [CAShapeLayer] = observedFaces.flatMap({ (observedFace: VNFaceObservation) -> [CAShapeLayer] in
-            
-            print(observedFace.boundingBox);
-          
+             
             let faceBoundingBoxOnScreen = self.previewLayer.layerRectConverted(fromMetadataOutputRect: observedFace.boundingBox)
             let faceBoundingBoxPath = CGPath(roundedRect: faceBoundingBoxOnScreen, cornerWidth: faceBoundingBoxOnScreen.width/2, cornerHeight: faceBoundingBoxOnScreen.height/2, transform: nil)
             let faceBoundingBoxShape = CAShapeLayer()
@@ -291,8 +291,8 @@ class TestViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
             let overlayCalculatedY = overlayCircle.frame.origin.y + overlayCircle.frame.height
             
             self.lblEyeBlink.isHidden = false
-            
-            if (overlayCalculatedX - faceCalculatedX) < 100 && (overlayCalculatedX - faceCalculatedX) > 0 && (overlayCalculatedY - faceCalculatedY) > 0 && (overlayCalculatedY - faceCalculatedY) < 100 {
+             
+            if (overlayCalculatedX - faceCalculatedX) < 130 && (overlayCalculatedX - faceCalculatedX) > 0 && (overlayCalculatedY - faceCalculatedY) > 0 && (overlayCalculatedY - faceCalculatedY) < 130 {
                 DispatchQueue.main.async {
                     self.lblEyeBlink.isHidden = false
                     self.shape.strokeColor = #colorLiteral(red: 0.3411764801, green: 0.6235294342, blue: 0.1686274558, alpha: 1).cgColor
@@ -308,7 +308,7 @@ class TestViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
                             // ...
                             return
                         }
-                        print("Faces detected")
+                      
                         
                         for face in faces {
                             let frame = face.frame
@@ -316,14 +316,17 @@ class TestViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
                             var right : CGFloat = 0.0
                             if face.hasRightEyeOpenProbability {
                                 left = face.rightEyeOpenProbability
+                             
                             }
                             if face.hasLeftEyeOpenProbability {
                                 right = face.leftEyeOpenProbability
+                                
                             }
-                            
+                           print(self.state)
+                            print(right);
+                            print(left);
                             switch self.state {
                             case 0:
-
                                 if left > self.Open_threshold && right > self.Open_threshold{
                                     self.state = 1
                                 }
